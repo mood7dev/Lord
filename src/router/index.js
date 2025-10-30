@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
-import App from "@/App.vue";
+import HomeView from "@/HomeView.vue";
 import ProductDetail from "@/components/ProductDetail.vue";
 
 const routes = [
   {
     path: "/",
     name: "Home",
-    component: App,
+    component: HomeView,
   },
   {
     path: "/product/:id",
@@ -15,7 +15,6 @@ const routes = [
     props: true,
   },
 ];
-
 const router = createRouter({
   history: createWebHistory(),
   routes,

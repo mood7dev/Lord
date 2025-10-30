@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
+import { useProductStore } from "@/stores/productStore"; // Pinia Store 경로를 프로젝트에 맞게 확인하세요.
 
 // ProductDetail 컴포넌트가 props로 'product'를 받지 않을 경우를 대비하여
 // URL 파라미터로 직접 상품을 조회하도록 변경합니다.
@@ -18,118 +19,9 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "add-to-cart"]);
 
-// ===============================================
-// 1. 하드코딩된 전체 상품 데이터
-// ===============================================
-const ALL_PRODUCTS_DATA = [
-  // newitem
-  {
-    id: "n1",
-    name: "올리브 캐미슬 롬퍼",
-    price: 45000,
-    originalPrice: 56000,
-    discount: 20,
-    code: "NITEM001",
-    isNew: true,
-    images: [
-      "/assets/item1.jpg",
-      "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
-    ],
-  },
-  {
-    id: "n2",
-    name: "스타일리시 애슬레저 세트",
-    price: 52000,
-    originalPrice: 58000,
-    discount: 10,
-    code: "NITEM002",
-    isNew: true,
-    images: [
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=720",
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=600&fit=crop",
-    ],
-  },
-  {
-    id: "n3",
-    name: "오버핏 스웨이드 자켓",
-    price: 71000,
-    originalPrice: 89000,
-    discount: 20,
-    code: "NITEM003",
-    isNew: true,
-    images: [
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=600&fit=crop",
-    ],
-  },
-  {
-    id: "n4",
-    name: "네추럴 플라워 원피스",
-    price: 48000,
-    originalPrice: 69000,
-    discount: 30,
-    code: "NITEM004",
-    isNew: true,
-    images: [
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=600&fit=crop",
-    ],
-  },
-  {
-    id: "n5",
-    name: "슬림핏 슬랙스",
-    price: 52000,
-    originalPrice: 68000,
-    discount: 24,
-    code: "NITEM005",
-    isNew: true,
-    images: [
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
-    ],
-  },
-  // todayship
-  {
-    id: "t1",
-    name: "린넨 와이드 팬츠",
-    price: 39000,
-    originalPrice: 49000,
-    discount: 20,
-    code: "TDY001",
-    isNew: false,
-    images: [
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
-    ],
-  },
-  {
-    id: "t2",
-    name: "베이직 코튼 티셔츠",
-    price: 19000,
-    originalPrice: 25000,
-    discount: 24,
-    code: "TDY002",
-    isNew: false,
-    images: [
-      "https://images.unsplash.com/photo-1714070700737-24acfe6b957c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880",
-    ],
-  },
-  // outlet
-  {
-    id: "o1",
-    name: "아울렛 니트 가디건",
-    price: 29000,
-    originalPrice: 59000,
-    discount: 51,
-    code: "OUT001",
-    isNew: false,
-    images: [
-      "https://images.unsplash.com/photo-1758981400298-78cd18eb6793?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687",
-    ],
-  },
-  // 모든 상품을 ProductDetail에서 필요로 하는 상세 정보 (images 등)를 포함하여 나열해야 합니다.
-  // 이 예시에서는 n2의 상세 정보만 추가했습니다.
-  // n2의 상세 정보:
-  // (ProductCard에서 price, originalPrice, discount 외에 images, code, isNew 등의 정보가 필요합니다.)
-];
+// ⭐️ Pinia Store 인스턴스 생성 및 로컬 데이터 제거
+const productStore = useProductStore();
+// const ALL_PRODUCTS_DATA = [...] // ⭐️ 이 하드코딩된 데이터는 제거했습니다.
 
 // ===============================================
 // 2. 라우트 및 데이터 상태 관리
@@ -138,7 +30,7 @@ const route = useRoute();
 const detailProduct = ref(null);
 const selectedColor = ref("");
 const selectedSize = ref("");
-const quantity = ref(0);
+const quantity = ref(1); // 기본 수량을 1로 변경
 const currentImage = ref(0);
 
 const colors = [
@@ -155,7 +47,21 @@ const sizes = ["S", "M", "L", "XL"];
 // ===============================================
 const currentProduct = computed(() => {
   // props.product가 전달되면 그것을 사용하고, 아니면 detailProduct을 사용
-  return props.product || detailProduct.value;
+  const productData = props.product || detailProduct.value;
+
+  // images 배열이 없거나 비어있는 경우, 기본 이미지를 포함합니다.
+  if (productData && (!productData.images || productData.images.length === 0)) {
+    return {
+      ...productData,
+      images: [
+        productData.image ||
+          "https://via.placeholder.com/600x800?text=Default+Image",
+      ],
+      // Pinia Store에는 images 배열이 없으므로, 기본 이미지 URL(image)을 사용합니다.
+    };
+  }
+
+  return productData;
 });
 
 const totalPrice = computed(() => {
@@ -172,9 +78,9 @@ const selectColor = (colorId) => {
 
 const selectSize = (size) => {
   selectedSize.value = size;
-  if (quantity.value === 0) {
-    quantity.value = 1;
-  }
+  // if (quantity.value === 0) { // 기본 수량을 1로 설정했으므로 제거 가능
+  //   quantity.value = 1;
+  // }
 };
 
 const increaseQuantity = () => {
@@ -193,6 +99,16 @@ const addToCart = () => {
     return;
   }
 
+  // Pinia Store의 Action을 호출하여 장바구니에 추가
+  // emit("add-to-cart", { ... }); 대신 Pinia Action을 직접 사용하려면 아래 주석 해제
+  // productStore.addToCart({
+  //   ...currentProduct.value,
+  //   color: selectedColor.value,
+  //   size: selectedSize.value,
+  //   quantity: quantity.value,
+  // });
+
+  // 현재 코드는 emit을 사용하므로 그대로 유지합니다.
   emit("add-to-cart", {
     ...currentProduct.value,
     color: selectedColor.value,
@@ -221,42 +137,28 @@ const prevImage = () => {
 };
 
 // ===============================================
-// 4. 상품 데이터 조회 로직 (Mounted 시 실행)
+// 4. 상품 데이터 조회 로직 (Mounted 시 Pinia Store 사용)
 // ===============================================
 onMounted(() => {
   if (!props.product) {
     const productId = route.params.id;
 
-    // 전체 상품 목록에서 ID에 해당하는 상품 찾기
-    const foundProduct = ALL_PRODUCTS_DATA.find((p) => p.id === productId);
+    // ⭐️ Pinia Store의 getProductById Getter를 사용하여 상품 조회
+    const foundProduct = productStore.getProductById(productId);
 
     if (foundProduct) {
-      // 상세 정보를 추가합니다. (예: images가 모든 상품에 있어야 함)
-      // n2에 images, code, isNew가 없어서 오류가 났을 수 있으므로 직접 추가합니다.
-      const dataWithDetails = {
+      // Pinia Store에 이미 모든 상세 정보가 있으므로, 추가 정제만 합니다.
+      detailProduct.value = {
         ...foundProduct,
-        images: foundProduct.images || [
-          "https://via.placeholder.com/600x800?text=Default+Image",
-        ],
-        code: foundProduct.code || "NOCODE",
-        isNew: foundProduct.isNew === undefined ? false : foundProduct.isNew,
-        originalPrice: foundProduct.originalPrice || foundProduct.price,
-        discount: foundProduct.discount || 0,
+        // Pinia Store에 images가 있다면 그대로 사용하고, 없다면 image 속성을 배열로
+        images: foundProduct.images || [foundProduct.image],
       };
 
-      // n2 상세 페이지 이미지 세부 정보 추가 (예시)
-      if (productId === "n2" && dataWithDetails.images.length < 2) {
-        dataWithDetails.images = [
-          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=720",
-          "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=600&fit=crop",
-          "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=600&fit=crop",
-        ];
+      if (quantity.value === 0) {
+        quantity.value = 1;
       }
-
-      detailProduct.value = dataWithDetails;
     } else {
-      // 상품을 찾지 못했을 경우 404 처리 (예: 경고 로그만 남기기)
-      console.error(`상품 ID ${productId}를 찾을 수 없습니다.`);
+      console.error(`상품 ID ${productId}를 찾을 수 없습니다. (Pinia Store)`);
     }
   }
 });
@@ -399,7 +301,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="quantity > 0" class="selected-item">
+        <div v-if="quantity > 0 && selectedSize" class="selected-item">
           <div class="item-info">
             <p class="item-name">{{ currentProduct.name }}</p>
             <p class="item-options">
@@ -450,6 +352,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* (스타일 코드는 변경 없음) */
 .product-detail {
   background: white;
   width: 100%;
@@ -487,6 +390,7 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px;
+  margin-top: 140px;
 }
 .product-images {
   display: flex;

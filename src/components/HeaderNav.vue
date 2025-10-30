@@ -24,7 +24,7 @@ const toggleMobileMenu = () => {
         <i class="bi" :class="isMobileMenuOpen ? 'bi-x' : 'bi-list'"></i>
       </button>
 
-      <div class="logo">LORD</div>
+      <router-link to="/" class="logo">LORD</router-link>
 
       <nav class="top-nav" :class="{ 'mobile-open': isMobileMenuOpen }">
         <div class="mobile-main-menu">
@@ -103,10 +103,12 @@ const toggleMobileMenu = () => {
 }
 
 .logo {
+  text-decoration: none;
+  color: #ffd700;
   font-size: 32px;
   font-weight: 700;
-  color: #ffd700;
   letter-spacing: 2px;
+  cursor: pointer;
 }
 
 .mobile-menu-btn {
@@ -224,7 +226,6 @@ const toggleMobileMenu = () => {
   width: 100%;
 }
 
-/* 태블릿 반응형 */
 @media (max-width: 1024px) {
   .top-bar {
     padding: 15px 30px;
@@ -259,7 +260,6 @@ const toggleMobileMenu = () => {
   }
 }
 
-/* 모바일 반응형 */
 @media (max-width: 768px) {
   .top-bar {
     padding: 15px 20px;
@@ -369,7 +369,6 @@ const toggleMobileMenu = () => {
   }
 }
 
-/* 작은 모바일 */
 @media (max-width: 480px) {
   .logo {
     font-size: 20px;
