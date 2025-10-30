@@ -439,7 +439,10 @@ onUnmounted(() => {
 }
 
 .carousel-indicators {
-  display: none;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
 }
 
 .indicator {
@@ -450,6 +453,12 @@ onUnmounted(() => {
   border: none;
   cursor: pointer;
   transition: all 0.3s;
+}
+
+.indicator.active {
+  background: #333;
+  width: 30px;
+  border-radius: 6px;
 }
 
 .cart-overlay {
@@ -873,8 +882,49 @@ onUnmounted(() => {
   transform: translateX(-50%) translateY(20px);
 }
 
-/* 반응형 미디어 쿼리 */
 @media (max-width: 1024px) {
+  .main-content {
+    padding: 60px 30px 0 30px;
+  }
+
+  .section-title {
+    font-size: 32px;
+  }
+
+  .section-subtitle {
+    font-size: 18px;
+  }
+
+  .products-carousel {
+    padding: 0 50px;
+  }
+
+  .products-page {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+
+  .carousel-btn {
+    width: 45px;
+    height: 45px;
+  }
+
+  .carousel-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cart-sidebar {
+    width: 400px;
+  }
+}
+
+/* 태블릿 (768px 이하) - 푸터 추가 */
+@media (max-width: 768px) {
+  .footer {
+    padding: 50px 30px 25px;
+  }
+
   .footer-content {
     flex-wrap: wrap;
     gap: 40px;
@@ -882,66 +932,7 @@ onUnmounted(() => {
 
   .footer-section {
     flex: 1 1 calc(50% - 20px);
-    min-width: 250px;
-  }
-}
-
-@media (max-width: 768px) {
-  .footer {
-    padding: 40px 20px 20px;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .footer-section {
-    flex: 1 1 100%;
-  }
-
-  .coupon-popup {
-    width: 90%;
-    max-width: 400px;
-    height: 160px;
-  }
-
-  .coupon-brand {
-    font-size: 36px;
-  }
-
-  .coupon-content {
-    margin-left: 24px;
-  }
-
-  .coupon-image {
-    width: 180px;
-    margin-top: 40px;
-    margin-left: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .coupon-popup {
-    height: 140px;
-  }
-
-  .coupon-brand {
-    font-size: 32px;
-  }
-
-  .coupon-text {
-    font-size: 14px;
-  }
-
-  .coupon-content {
-    margin-left: 20px;
-  }
-
-  .coupon-image {
-    width: 150px;
-    margin-top: 35px;
-    margin-left: 15px;
+    min-width: 200px;
   }
 
   .footer-section h3 {
@@ -950,6 +941,219 @@ onUnmounted(() => {
 
   .footer-section a {
     font-size: 13px;
+    word-break: keep-all;
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 30px 15px 0 15px;
+  }
+
+  .weekly-best {
+    margin-bottom: 60px;
+  }
+
+  .section-header {
+    margin-bottom: 40px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+  }
+
+  .products-page {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .more-btn {
+    padding: 12px 40px;
+    font-size: 13px;
+  }
+
+  .cart-sidebar {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .cart-header h2 {
+    font-size: 20px;
+  }
+
+  .cart-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cart-item-image {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    aspect-ratio: 2/3;
+  }
+
+  .cart-item-info {
+    width: 100%;
+  }
+
+  .cart-item-actions {
+    justify-content: center;
+  }
+
+  .checkout-btn {
+    font-size: 15px;
+    padding: 14px;
+  }
+
+  /* 푸터 반응형 */
+  .footer {
+    padding: 40px 20px 20px;
+    margin-top: 60px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 35px;
+    margin-bottom: 30px;
+  }
+
+  .footer-section {
+    flex: none;
+    width: 100%;
+  }
+
+  .footer-section h3 {
+    font-size: 15px;
+    margin-bottom: 15px;
+  }
+
+  .footer-section ul {
+    margin-bottom: 15px;
+  }
+
+  .footer-section li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+
+  .footer-section a {
+    font-size: 13px;
+    word-break: keep-all;
+    line-height: 1.6;
+  }
+
+  .footer-policy {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .footer-policy li {
+    margin-bottom: 10px;
+  }
+
+  .footer-policy li:not(:last-child)::after {
+    display: none;
+  }
+
+  .footer-bottom {
+    padding-top: 20px;
+    font-size: 12px;
+  }
+
+  /* 쿠폰 팝업 반응형 */
+  .coupon-popup {
+    width: calc(100% - 30px);
+    max-width: 380px;
+    height: 150px;
+    bottom: 20px;
+  }
+
+  .coupon-content {
+    margin-left: 25px;
+  }
+
+  .coupon-brand {
+    font-size: 36px;
+    margin-bottom: 6px;
+  }
+
+  .coupon-text {
+    font-size: 14px;
+  }
+
+  .coupon-image {
+    width: 160px;
+    margin-top: 40px;
+    margin-left: 20px;
+  }
+
+  .coupon-close,
+  .coupon-download {
+    width: 28px;
+    height: 28px;
+    top: 10px;
+  }
+
+  .coupon-close svg,
+  .coupon-download svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .coupon-download {
+    right: 46px;
+  }
+}
+
+/* 초소형 모바일 (360px 이하) */
+@media (max-width: 360px) {
+  .section-title {
+    font-size: 20px;
+  }
+
+  .section-subtitle {
+    font-size: 12px;
+  }
+
+  .footer-section h3 {
+    font-size: 14px;
+  }
+
+  .footer-section a {
+    font-size: 12px;
+  }
+
+  .coupon-popup {
+    width: calc(100% - 20px);
+    height: 130px;
+    bottom: 15px;
+  }
+
+  .coupon-content {
+    margin-left: 20px;
+  }
+
+  .coupon-brand {
+    font-size: 30px;
+    margin-bottom: 4px;
+  }
+
+  .coupon-text {
+    font-size: 12px;
+  }
+
+  .coupon-image {
+    width: 130px;
+    margin-top: 35px;
+    margin-left: 15px;
   }
 }
 </style>

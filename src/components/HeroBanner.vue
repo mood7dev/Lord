@@ -135,6 +135,9 @@ defineEmits(["next", "prev", "set-banner"]);
   text-align: center;
   color: white;
   z-index: 1;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .banner-content.yellow-text {
@@ -212,5 +215,127 @@ defineEmits(["next", "prev", "set-banner"]);
   background: white;
   width: 30px;
   border-radius: 6px;
+}
+
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
+  color: #666;
+}
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+  .hero {
+    height: 450px;
+  }
+
+  .banner-title {
+    font-size: 48px;
+    letter-spacing: 4px;
+    margin: 0 0 12px 0;
+  }
+
+  .banner-subtitle {
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+
+  .banner-btn,
+  .banner-btn-prev,
+  .banner-btn-next {
+    display: none !important;
+  }
+
+  .banner-indicators {
+    bottom: 20px;
+    gap: 10px;
+  }
+
+  .indicator {
+    width: 10px;
+    height: 10px;
+  }
+
+  .indicator.active {
+    width: 24px;
+  }
+
+  .banner-image.custom-fit {
+    margin-top: 50px;
+    transform: scale(1.05);
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .hero {
+    height: 350px;
+  }
+
+  .banner-content {
+    top: 60%;
+    padding: 0 15px;
+  }
+
+  .banner-title {
+    font-size: 32px;
+    letter-spacing: 2px;
+    margin: 0 0 8px 0;
+  }
+
+  .banner-subtitle {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .banner-btn,
+  .banner-btn-prev,
+  .banner-btn-next {
+    display: none;
+  }
+
+  .banner-indicators {
+    bottom: 15px;
+    gap: 8px;
+  }
+
+  .indicator {
+    width: 8px;
+    height: 8px;
+  }
+
+  .indicator.active {
+    width: 20px;
+  }
+
+  .banner-image.custom-fit {
+    margin-top: 30px;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 360px) {
+  .hero {
+    height: 300px;
+  }
+
+  .banner-title {
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+
+  .banner-subtitle {
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .banner-btn,
+  .banner-btn-prev,
+  .banner-btn-next {
+    display: none;
+  }
 }
 </style>

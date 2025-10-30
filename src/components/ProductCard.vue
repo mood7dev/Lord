@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { useRouter } from "vue-router";
+
+const props = defineProps({
   product: {
     type: Object,
     required: true,
@@ -8,18 +10,32 @@ defineProps({
 
 defineEmits(["add-to-cart"]);
 
+const router = useRouter();
+
 const formatPrice = (price) => {
   return price.toLocaleString("ko-KR");
+};
+
+const navigateToDetail = () => {
+  router.push({
+    name: "ProductDetail",
+    params: { id: props.product.id },
+  });
 };
 </script>
 
 <template>
-  <div class="product-card">
+  <div class="product-card" @click="navigateToDetail">
     <div class="product-image-wrapper">
       <img :src="product.image" :alt="product.name" class="product-image" />
       <div class="product-overlay">
-        <button class="btn-quick-view">Quick View</button>
-        <button class="btn-add-cart" @click="$emit('add-to-cart', product)">
+        <button class="btn-quick-view" @click.stop="navigateToDetail">
+          Quick View
+        </button>
+        <button
+          class="btn-add-cart"
+          @click.stop="$emit('add-to-cart', product)"
+        >
           Add to Cart
         </button>
       </div>

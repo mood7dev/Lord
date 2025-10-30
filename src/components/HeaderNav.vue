@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from "vue";
+
 defineProps({
   cartCount: {
     type: Number,
@@ -7,13 +9,37 @@ defineProps({
 });
 
 defineEmits(["show-cart"]);
+
+const isMobileMenuOpen = ref(false);
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
 </script>
 
 <template>
   <header class="header">
     <div class="top-bar">
+      <button class="mobile-menu-btn" @click="toggleMobileMenu">
+        <i class="bi" :class="isMobileMenuOpen ? 'bi-x' : 'bi-list'"></i>
+      </button>
+
       <div class="logo">LORD</div>
-      <nav class="top-nav">
+
+      <nav class="top-nav" :class="{ 'mobile-open': isMobileMenuOpen }">
+        <div class="mobile-main-menu">
+          <a href="#" class="mobile-main-link">메뉴</a>
+          <a href="#" class="mobile-main-link">NEW</a>
+          <a href="#" class="mobile-main-link">BEST</a>
+          <a href="#" class="mobile-main-link">땡처리특가</a>
+          <a href="#" class="mobile-main-link">SET</a>
+          <a href="#" class="mobile-main-link">OUTER</a>
+          <a href="#" class="mobile-main-link">DRESS</a>
+          <a href="#" class="mobile-main-link">TOP</a>
+          <a href="#" class="mobile-main-link">BOTTOM</a>
+          <a href="#" class="mobile-main-link">ACC</a>
+        </div>
+        <div class="menu-divider"></div>
         <a href="#" class="nav-link">LOGIN</a>
         <span class="divider">|</span>
         <a href="#" class="nav-link">JOIN US</a>
@@ -54,7 +80,7 @@ defineEmits(["show-cart"]);
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-  />;
+  />
 </template>
 
 <style scoped>
@@ -81,6 +107,18 @@ defineEmits(["show-cart"]);
   font-weight: 700;
   color: #ffd700;
   letter-spacing: 2px;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.mobile-main-menu {
+  display: none;
+}
+
+.menu-divider {
+  display: none;
 }
 
 .top-nav {
@@ -184,5 +222,166 @@ defineEmits(["show-cart"]);
 
 .main-nav-link:hover::after {
   width: 100%;
+}
+
+/* 태블릿 반응형 */
+@media (max-width: 1024px) {
+  .top-bar {
+    padding: 15px 30px;
+  }
+
+  .logo {
+    font-size: 28px;
+  }
+
+  .top-nav {
+    gap: 15px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+  }
+
+  .search-input {
+    width: 100px;
+  }
+
+  .main-nav {
+    gap: 25px;
+    padding: 15px 30px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-nav-link {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .top-bar {
+    padding: 15px 20px;
+    position: relative;
+  }
+
+  .logo {
+    font-size: 24px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .mobile-menu-btn {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #333;
+    padding: 0;
+    z-index: 10;
+  }
+
+  .top-nav {
+    display: none;
+    position: fixed;
+    top: 71px;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - 71px);
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .top-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-nav.mobile-open {
+    display: flex;
+  }
+
+  .mobile-main-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .mobile-main-link {
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 8px 0;
+  }
+
+  .mobile-main-link:hover {
+    color: #ffd700;
+  }
+
+  .mobile-main-link:last-child {
+    margin-bottom: 10px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .menu-divider {
+    display: none;
+  }
+
+  .nav-link {
+    font-size: 16px;
+    padding: 8px 0;
+    width: 100%;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .search-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .search-input {
+    width: 100%;
+    font-size: 16px;
+    padding: 8px 0;
+  }
+
+  .cart-badge {
+    right: -15px;
+  }
+
+  .main-nav {
+    display: none;
+  }
+}
+
+/* 작은 모바일 */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 20px;
+  }
+
+  .main-nav {
+    gap: 15px;
+    padding: 12px 15px;
+  }
+
+  .main-nav-link {
+    font-size: 12px;
+  }
 }
 </style>
