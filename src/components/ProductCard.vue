@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
+import { defineProps, defineEmits } from "vue"; // 명시적 임포트 (선택 사항)
 
 const props = defineProps({
   product: {
@@ -8,7 +9,8 @@ const props = defineProps({
   },
 });
 
-defineEmits(["add-to-cart"]);
+// ⭐️ 퀵뷰 이벤트를 추가했습니다.
+const emit = defineEmits(["add-to-cart", "open-quickview"]);
 
 const router = useRouter();
 
@@ -16,11 +18,18 @@ const formatPrice = (price) => {
   return price.toLocaleString("ko-KR");
 };
 
+// 1. 카드 본체 클릭 시: 상세 페이지로 라우팅 (URL 변경)
 const navigateToDetail = () => {
   router.push({
     name: "ProductDetail",
     params: { id: props.product.id },
   });
+};
+
+// ⭐️ 2. 퀵뷰 버튼 클릭 시: 부모에게 퀵뷰 모달을 열도록 이벤트 발생 (URL 변경 없음)
+const openQuickView = (event) => {
+  // @click.stop이 템플릿에 있지만, 명시적으로 $emit을 사용합니다.
+  emit("open-quickview", props.product);
 };
 </script>
 
@@ -29,7 +38,7 @@ const navigateToDetail = () => {
     <div class="product-image-wrapper">
       <img :src="product.image" :alt="product.name" class="product-image" />
       <div class="product-overlay">
-        <button class="btn-quick-view" @click.stop="navigateToDetail">
+        <button class="btn-quick-view" @click.stop="openQuickView">
           Quick View
         </button>
         <button

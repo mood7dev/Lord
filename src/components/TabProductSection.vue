@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Scrollbar, Mousewheel } from "swiper/modules";
 import "swiper/css";
@@ -56,14 +56,43 @@ const openQuickView = (product) => {
   };
 
   isQuickViewOpen.value = true;
-  document.body.style.overflow = "hidden";
 };
 
 const closeQuickView = () => {
   isQuickViewOpen.value = false;
   selectedProduct.value = null;
-  document.body.style.overflow = "";
 };
+
+// ----------------------------------------------------
+// QuickViewModal 로직 (Teleport와 함께 스크롤/키보드 제어) 병합
+// ----------------------------------------------------
+
+// Esc 키를 눌렀을 때 모달을 닫는 핸들러
+const handleKeydown = (event) => {
+  if (isQuickViewOpen.value && event.key === "Escape") {
+    closeQuickView();
+  }
+};
+
+// isQuickViewOpen이 변경될 때마다 body 스크롤을 제어
+watch(
+  isQuickViewOpen,
+  (newVal) => {
+    document.body.style.overflow = newVal ? "hidden" : "";
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  // 컴포넌트 마운트 시 Esc 키 이벤트 리스너 등록
+  document.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  // 컴포넌트 언마운트 시 이벤트 리스너 제거 및 스크롤 복원
+  document.removeEventListener("keydown", handleKeydown);
+  document.body.style.overflow = "";
+});
 </script>
 
 <template>
@@ -96,7 +125,7 @@ const closeQuickView = () => {
             <ProductCard
               :product="product"
               @add-to-cart="addToCart"
-              @quick-view="openQuickView"
+              @open-quickview="openQuickView"
             />
 
             <div class="product-extra-info">
@@ -128,13 +157,13 @@ const closeQuickView = () => {
   </section>
 
   <Teleport to="body">
-    <Transition name="modal">
+    <transition name="modal-fade">
       <div
         v-if="isQuickViewOpen && selectedProduct"
-        class="quick-view-overlay"
+        class="modal-backdrop"
         @click.self="closeQuickView"
       >
-        <div class="quick-view-content">
+        <div class="modal-content-wrapper">
           <ProductDetail
             :product="selectedProduct"
             :isQuickView="true"
@@ -143,7 +172,7 @@ const closeQuickView = () => {
           />
         </div>
       </div>
-    </Transition>
+    </transition>
   </Teleport>
 </template>
 
@@ -153,6 +182,9 @@ const closeQuickView = () => {
   margin: 0 auto;
   padding: 40px 40px 0 40px;
 }
+/* ----------------------------------
+ * 탭/슬라이더 CSS (유지)
+ * ---------------------------------- */
 .tabs-container {
   display: flex;
   justify-content: flex-start;
@@ -228,53 +260,6 @@ const closeQuickView = () => {
 :deep(.product-card .product-price) {
   display: none !important;
 }
-
-@media (max-width: 768px) {
-  .tabs-container {
-    gap: 30px;
-  }
-  .tab-btn {
-    font-size: 14px;
-  }
-  .product-slide {
-    min-width: 240px;
-  }
-}
-
-.quick-view-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.quick-view-content {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-  position: relative;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
 .product-slide-empty {
   width: auto !important;
 }
@@ -286,5 +271,84 @@ const closeQuickView = () => {
   border: 1px dashed #ddd;
   border-radius: 8px;
   margin-top: 20px;
+}
+
+/* ----------------------------------
+ * ⭐️ QuickViewModal CSS 병합 (최종 모달 디자인)
+ * ---------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+.modal-content-wrapper {
+  /* ⭐️ HomeView 모달과 동일한 1200px 너비로 통일 */
+  max-width: 1200px;
+  width: 100%;
+  background-color: white;
+  border-radius: 0; /* 이미지처럼 직각 모서리로 설정 */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* ----------------------------------
+ * Transition (애니메이션)
+ * ---------------------------------- */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-content-wrapper,
+.modal-fade-leave-active .modal-content-wrapper {
+  transition: transform 0.3s ease;
+}
+
+.modal-fade-enter-from .modal-content-wrapper,
+.modal-fade-leave-to .modal-content-wrapper {
+  transform: translateY(-50px);
+}
+
+/* ----------------------------------
+ * Responsive (반응형)
+ * ---------------------------------- */
+@media (max-width: 768px) {
+  .tabs-container {
+    gap: 30px;
+  }
+  .tab-btn {
+    font-size: 14px;
+  }
+  .product-slide {
+    min-width: 240px;
+  }
+
+  .modal-content-wrapper {
+    /* 모바일에서는 화면을 꽉 채우도록 설정 */
+    border-radius: 0;
+    max-width: 100%;
+    /* ⭐️ min-height를 100vh로 수정하여 모바일에서 화면 높이를 꽉 채우도록 통일 */
+    min-height: 100vh;
+    margin: 0;
+    overflow-y: auto;
+  }
+  .modal-backdrop {
+    padding: 0;
+    align-items: flex-start;
+  }
 }
 </style>

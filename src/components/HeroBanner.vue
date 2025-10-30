@@ -226,7 +226,14 @@ defineEmits(["next", "prev", "set-banner"]);
   color: #666;
 }
 
-/* 태블릿 (768px 이하) */
+@media (max-width: 1200px) {
+  .banner-btn,
+  .banner-btn-prev,
+  .banner-btn-next {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .hero {
     height: 450px;
@@ -241,12 +248,6 @@ defineEmits(["next", "prev", "set-banner"]);
   .banner-subtitle {
     font-size: 24px;
     letter-spacing: 2px;
-  }
-
-  .banner-btn,
-  .banner-btn-prev,
-  .banner-btn-next {
-    display: none !important;
   }
 
   .banner-indicators {
@@ -269,7 +270,6 @@ defineEmits(["next", "prev", "set-banner"]);
   }
 }
 
-/* 모바일 (480px 이하) */
 @media (max-width: 480px) {
   .hero {
     height: 350px;
@@ -289,12 +289,6 @@ defineEmits(["next", "prev", "set-banner"]);
   .banner-subtitle {
     font-size: 16px;
     letter-spacing: 1px;
-  }
-
-  .banner-btn,
-  .banner-btn-prev,
-  .banner-btn-next {
-    display: none;
   }
 
   .banner-indicators {
@@ -330,12 +324,6 @@ defineEmits(["next", "prev", "set-banner"]);
   .banner-subtitle {
     font-size: 14px;
     letter-spacing: 0.5px;
-  }
-
-  .banner-btn,
-  .banner-btn-prev,
-  .banner-btn-next {
-    display: none;
   }
 }
 </style>

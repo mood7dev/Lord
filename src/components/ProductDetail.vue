@@ -1,10 +1,8 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useProductStore } from "@/stores/productStore"; // Pinia Store 경로를 프로젝트에 맞게 확인하세요.
+import { useProductStore } from "@/stores/productStore";
 
-// ProductDetail 컴포넌트가 props로 'product'를 받지 않을 경우를 대비하여
-// URL 파라미터로 직접 상품을 조회하도록 변경합니다.
 const props = defineProps({
   product: {
     type: Object,
@@ -19,18 +17,13 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "add-to-cart"]);
 
-// ⭐️ Pinia Store 인스턴스 생성 및 로컬 데이터 제거
 const productStore = useProductStore();
-// const ALL_PRODUCTS_DATA = [...] // ⭐️ 이 하드코딩된 데이터는 제거했습니다.
 
-// ===============================================
-// 2. 라우트 및 데이터 상태 관리
-// ===============================================
 const route = useRoute();
 const detailProduct = ref(null);
 const selectedColor = ref("");
 const selectedSize = ref("");
-const quantity = ref(1); // 기본 수량을 1로 변경
+const quantity = ref(1);
 const currentImage = ref(0);
 
 const colors = [
@@ -42,14 +35,9 @@ const colors = [
 
 const sizes = ["S", "M", "L", "XL"];
 
-// ===============================================
-// 3. Computed & Methods
-// ===============================================
 const currentProduct = computed(() => {
-  // props.product가 전달되면 그것을 사용하고, 아니면 detailProduct을 사용
   const productData = props.product || detailProduct.value;
 
-  // images 배열이 없거나 비어있는 경우, 기본 이미지를 포함합니다.
   if (productData && (!productData.images || productData.images.length === 0)) {
     return {
       ...productData,
@@ -57,7 +45,6 @@ const currentProduct = computed(() => {
         productData.image ||
           "https://via.placeholder.com/600x800?text=Default+Image",
       ],
-      // Pinia Store에는 images 배열이 없으므로, 기본 이미지 URL(image)을 사용합니다.
     };
   }
 
@@ -78,9 +65,6 @@ const selectColor = (colorId) => {
 
 const selectSize = (size) => {
   selectedSize.value = size;
-  // if (quantity.value === 0) { // 기본 수량을 1로 설정했으므로 제거 가능
-  //   quantity.value = 1;
-  // }
 };
 
 const increaseQuantity = () => {
@@ -99,16 +83,6 @@ const addToCart = () => {
     return;
   }
 
-  // Pinia Store의 Action을 호출하여 장바구니에 추가
-  // emit("add-to-cart", { ... }); 대신 Pinia Action을 직접 사용하려면 아래 주석 해제
-  // productStore.addToCart({
-  //   ...currentProduct.value,
-  //   color: selectedColor.value,
-  //   size: selectedSize.value,
-  //   quantity: quantity.value,
-  // });
-
-  // 현재 코드는 emit을 사용하므로 그대로 유지합니다.
   emit("add-to-cart", {
     ...currentProduct.value,
     color: selectedColor.value,
@@ -136,21 +110,15 @@ const prevImage = () => {
   }
 };
 
-// ===============================================
-// 4. 상품 데이터 조회 로직 (Mounted 시 Pinia Store 사용)
-// ===============================================
 onMounted(() => {
   if (!props.product) {
     const productId = route.params.id;
 
-    // ⭐️ Pinia Store의 getProductById Getter를 사용하여 상품 조회
     const foundProduct = productStore.getProductById(productId);
 
     if (foundProduct) {
-      // Pinia Store에 이미 모든 상세 정보가 있으므로, 추가 정제만 합니다.
       detailProduct.value = {
         ...foundProduct,
-        // Pinia Store에 images가 있다면 그대로 사용하고, 없다면 image 속성을 배열로
         images: foundProduct.images || [foundProduct.image],
       };
 
@@ -352,36 +320,41 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* (스타일 코드는 변경 없음) */
 .product-detail {
   background: white;
   width: 100%;
 }
 .product-detail.quick-view {
   position: relative;
-  max-width: 1200px;
+  /* 퀵뷰 모드일 때는 부모 컨테이너(TabProductSection의 .quick-view-content)의 크기를 따르도록 max-width를 100%로 설정 */
+  max-width: 100%;
   margin: 0 auto;
-  padding: 40px;
+  padding: 0;
 }
+
 .close-btn {
   position: absolute;
   top: 20px;
   right: 20px;
   background: white;
-  border: 1px solid #ddd;
+  /* ⭐️ 수정: 테두리를 없애고 투명하게 만듭니다. */
+  border: none;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  /* 둥근 테두리 제거 */
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 100;
   transition: all 0.3s;
 }
+
 .close-btn:hover {
   background: #f5f5f5;
-  border-color: #333;
+  /* ⭐️ 수정: 호버 시에도 테두리가 보이지 않도록 */
+  border-color: transparent;
 }
 .product-container {
   display: grid;
@@ -390,7 +363,12 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px;
-  margin-top: 140px;
+  margin-top: 140px; /* 일반 상품 상세 페이지용 마진 */
+}
+/* 퀵뷰 모드일 때의 핵심 수정: 마진 제거 및 패딩 재설정 */
+.product-detail.quick-view .product-container {
+  margin-top: 0;
+  padding: 40px;
 }
 .product-images {
   display: flex;

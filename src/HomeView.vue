@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 
+import ProductDetail from "@/components/ProductDetail.vue";
+import QuickViewModal from "@/components/QuickViewModal.vue";
+
 import HeroBanner from "@/components/HeroBanner.vue";
 import ProductCard from "@/components/ProductCard.vue";
 import TabProductSection from "@/components/TabProductSection.vue";
@@ -12,10 +15,12 @@ const store = useProductStore();
 const showCoupon = ref(true);
 const productSlide = ref(0);
 
-// ⭐️ 변경: products 대신 featuredProducts를 가져옵니다.
+// ⭐️ 추가: 퀵뷰 상태 관리
+const isQuickViewOpen = ref(false);
+const quickViewProduct = ref(null);
+
 const { banners, currentBanner, featuredProducts } = storeToRefs(store);
 
-// ⭐️ safePageCount는 featuredProducts의 길이에 따라 계산됩니다. (4개씩 표시)
 const safePageCount = computed(() => {
   return Array.isArray(featuredProducts.value)
     ? Math.ceil(featuredProducts.value.length / 4)
@@ -24,6 +29,28 @@ const safePageCount = computed(() => {
 
 const addToCart = (product) => {
   store.addToCart(product);
+};
+
+// ⭐️ 퀵뷰 열기 함수 (ProductCard의 @open-quickview 이벤트가 호출)
+const openQuickView = (product) => {
+  quickViewProduct.value = product; // 모달에 전달할 상품 데이터 설정
+  isQuickViewOpen.value = true;
+  // 모달이 열릴 때 스크롤을 막아 배경 스크롤을 방지합니다.
+  document.body.style.overflow = "hidden";
+};
+
+// ⭐️ 퀵뷰 닫기 함수
+const closeQuickView = () => {
+  isQuickViewOpen.value = false;
+  quickViewProduct.value = null;
+  // 스크롤 복원
+  document.body.style.overflow = "";
+};
+
+// ⭐️ 장바구니 추가 후 모달 닫기 처리 함수 (ProductDetail에서 호출)
+const handleAddToCartAndClose = (item) => {
+  store.addToCart(item);
+  closeQuickView(); // 장바구니에 추가 후 모달을 닫습니다.
 };
 
 const nextBanner = () => store.nextBanner();
@@ -71,6 +98,7 @@ onUnmounted(() => {
       <section class="weekly-best">
         <div class="section-header">
           <h2 class="section-title">WEEKLY BEST ITEMS</h2>
+
           <p class="section-subtitle">실시간 주목폭발 인기상품</p>
         </div>
 
@@ -109,6 +137,7 @@ onUnmounted(() => {
                   :key="product.id"
                   :product="product"
                   @add-to-cart="addToCart"
+                  @open-quickview="openQuickView"
                 />
               </div>
             </div>
@@ -162,9 +191,11 @@ onUnmounted(() => {
             stroke-width="2"
           >
             <line x1="18" y1="6" x2="6" y2="18"></line>
+
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
+
         <button class="coupon-download">
           <svg
             width="20"
@@ -175,15 +206,20 @@ onUnmounted(() => {
             stroke-width="2"
           >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+
             <polyline points="7 10 12 15 17 10"></polyline>
+
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
+
         <div class="coupon-content">
           <div class="coupon-brand">LORD</div>
+
           <div class="coupon-text">신규회원</div>
           <span>웰컴 쿠폰 증정</span>
         </div>
+
         <div class="coupon-value">
           <img
             src="/assets/coupon.png"
@@ -193,11 +229,20 @@ onUnmounted(() => {
         </div>
       </div>
     </transition>
+
+    <QuickViewModal :is-visible="isQuickViewOpen" @close="closeQuickView">
+      <ProductDetail
+        v-if="quickViewProduct"
+        :product="quickViewProduct"
+        :is-quick-view="true"
+        @close="closeQuickView"
+        @add-to-cart="handleAddToCartAndClose"
+      />
+    </QuickViewModal>
   </div>
 </template>
 
 <style scoped>
-/* 스타일은 변경하지 않습니다. */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
@@ -297,9 +342,7 @@ onUnmounted(() => {
 }
 
 .indicator.active {
-  background: #333;
-  width: 30px;
-  border-radius: 6px;
+  display: none;
 }
 
 .more-btn-container {
