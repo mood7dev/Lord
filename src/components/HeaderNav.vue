@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 
 defineProps({
   cartCount: {
@@ -11,14 +11,27 @@ defineProps({
 defineEmits(["show-cart"]);
 
 const isMobileMenuOpen = ref(false);
+const isScrolled = ref(false);
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50; // 50px 이상 스크롤 시 한 줄
+};
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 </script>
 
 <template>
-  <header class="header">
+  <header :class="['header', { scrolled: isScrolled }]">
     <div class="top-bar">
       <button class="mobile-menu-btn" @click="toggleMobileMenu">
         <i class="bi" :class="isMobileMenuOpen ? 'bi-x' : 'bi-list'"></i>
@@ -84,6 +97,7 @@ const toggleMobileMenu = () => {
 </template>
 
 <style scoped>
+/* 기존 스타일 유지 */
 .header {
   position: fixed;
   top: 0;
@@ -92,6 +106,7 @@ const toggleMobileMenu = () => {
   background: white;
   z-index: 1000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
 }
 
 .top-bar {
@@ -100,6 +115,7 @@ const toggleMobileMenu = () => {
   align-items: center;
   padding: 20px 40px;
   border-bottom: 1px solid #eee;
+  transition: all 0.3s;
 }
 
 .logo {
@@ -109,6 +125,7 @@ const toggleMobileMenu = () => {
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
 .mobile-menu-btn {
@@ -127,6 +144,7 @@ const toggleMobileMenu = () => {
   display: flex;
   align-items: center;
   gap: 20px;
+  transition: all 0.3s;
 }
 
 .nav-link {
@@ -196,6 +214,7 @@ const toggleMobileMenu = () => {
   gap: 40px;
   padding: 18px 40px;
   background: white;
+  transition: all 0.3s;
 }
 
 .main-nav-link {
@@ -226,6 +245,26 @@ const toggleMobileMenu = () => {
   width: 100%;
 }
 
+/* === 스크롤 후 한 줄 === */
+.header.scrolled .top-bar {
+  padding: 10px 40px;
+}
+
+.header.scrolled .logo {
+  font-size: 20px;
+}
+
+.header.scrolled .main-nav {
+  display: none;
+}
+
+.header.scrolled .top-nav {
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* 기존 반응형 스타일 유지 */
 @media (max-width: 1024px) {
   .top-bar {
     padding: 15px 30px;
