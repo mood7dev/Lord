@@ -16,12 +16,16 @@ const totalPrice = computed(() => {
   return cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
 });
 
-const removeFromCart = (productId) => {
-  store.removeFromCart(productId);
+const removeFromCart = (cartItemId) => {
+  store.removeFromCart(cartItemId);
 };
 
-const updateQuantity = (productId, delta) => {
-  store.updateQuantity(productId, delta);
+const increaseQuantity = (cartItemId) => {
+  store.increaseQuantity(cartItemId);
+};
+
+const decreaseQuantity = (cartItemId) => {
+  store.decreaseQuantity(cartItemId);
 };
 
 const formatPrice = (price) => {
@@ -74,7 +78,7 @@ const formatPrice = (price) => {
             </div>
 
             <div v-else class="cart-items">
-              <div v-for="item in cart" :key="item.id" class="cart-item">
+              <div v-for="item in cart" :key="item.cartId" class="cart-item">
                 <img
                   :src="item.image"
                   :alt="item.name"
@@ -82,19 +86,28 @@ const formatPrice = (price) => {
                 />
                 <div class="cart-item-info">
                   <h3 class="cart-item-name">{{ item.name }}</h3>
+                  <p class="cart-item-options">
+                    {{ item.color }} / {{ item.size }}
+                  </p>
                   <p class="cart-item-price">{{ formatPrice(item.price) }}원</p>
                   <div class="cart-item-actions">
                     <button
                       class="qty-btn"
-                      @click="updateQuantity(item.id, -1)"
+                      @click="decreaseQuantity(item.cartId)"
                     >
                       -
                     </button>
                     <span class="qty-value">{{ item.quantity }}</span>
-                    <button class="qty-btn" @click="updateQuantity(item.id, 1)">
+                    <button
+                      class="qty-btn"
+                      @click="increaseQuantity(item.cartId)"
+                    >
                       +
                     </button>
-                    <button class="remove-btn" @click="removeFromCart(item.id)">
+                    <button
+                      class="remove-btn"
+                      @click="removeFromCart(item.cartId)"
+                    >
                       삭제
                     </button>
                   </div>
@@ -279,6 +292,12 @@ const formatPrice = (price) => {
   font-weight: 700;
   color: #ffd700;
   margin: 0 0 12px 0;
+}
+
+.cart-item-options {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 4px 0;
 }
 
 .cart-item-actions {

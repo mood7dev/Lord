@@ -2,22 +2,56 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import ProductDetail from "@/components/ProductDetail.vue";
-import QuickViewModal from "@/components/QuickViewModal.vue";
-
 import HeroBanner from "@/components/HeroBanner.vue";
 import ProductCard from "@/components/ProductCard.vue";
 import TabProductSection from "@/components/TabProductSection.vue";
 import Review from "@/components/Review.vue";
+import QuickViewModal from "@/components/QuickViewModal.vue";
+import ProductDetail from "@/components/ProductDetail.vue";
 import { useProductStore } from "@/stores/productStore";
 
 const store = useProductStore();
 const showCoupon = ref(true);
 const productSlide = ref(0);
 
-// ⭐️ 추가: 퀵뷰 상태 관리
 const isQuickViewOpen = ref(false);
 const quickViewProduct = ref(null);
+const scrollBarWidth = ref(0);
+
+const closeQuickView = () => {
+  isQuickViewOpen.value = false;
+  quickViewProduct.value = null;
+  document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
+  document.body.style.setProperty("--scroll-bar-width", "0px");
+  scrollBarWidth.value = 0;
+};
+
+const openQuickView = (product) => {
+  // 퀵뷰 열릴 때 쿠폰 닫기
+  showCoupon.value = false;
+
+  const width = window.innerWidth - document.documentElement.clientWidth;
+
+  quickViewProduct.value = product;
+  isQuickViewOpen.value = true;
+  scrollBarWidth.value = width;
+
+  document.body.style.overflow = "hidden";
+  document.body.style.paddingRight = `${width}px`;
+  document.body.style.setProperty("--scroll-bar-width", `${width}px`);
+};
+
+const handleAddToCartFromQuickView = (item) => {
+  store.addToCart(item);
+  closeQuickView();
+};
+
+const handleKeydown = (event) => {
+  if (isQuickViewOpen.value && event.key === "Escape") {
+    closeQuickView();
+  }
+};
 
 const { banners, currentBanner, featuredProducts } = storeToRefs(store);
 
@@ -26,32 +60,6 @@ const safePageCount = computed(() => {
     ? Math.ceil(featuredProducts.value.length / 4)
     : 0;
 });
-
-const addToCart = (product) => {
-  store.addToCart(product);
-};
-
-// ⭐️ 퀵뷰 열기 함수 (ProductCard의 @open-quickview 이벤트가 호출)
-const openQuickView = (product) => {
-  quickViewProduct.value = product; // 모달에 전달할 상품 데이터 설정
-  isQuickViewOpen.value = true;
-  // 모달이 열릴 때 스크롤을 막아 배경 스크롤을 방지합니다.
-  document.body.style.overflow = "hidden";
-};
-
-// ⭐️ 퀵뷰 닫기 함수
-const closeQuickView = () => {
-  isQuickViewOpen.value = false;
-  quickViewProduct.value = null;
-  // 스크롤 복원
-  document.body.style.overflow = "";
-};
-
-// ⭐️ 장바구니 추가 후 모달 닫기 처리 함수 (ProductDetail에서 호출)
-const handleAddToCartAndClose = (item) => {
-  store.addToCart(item);
-  closeQuickView(); // 장바구니에 추가 후 모달을 닫습니다.
-};
 
 const nextBanner = () => store.nextBanner();
 const prevBanner = () => store.prevBanner();
@@ -75,12 +83,14 @@ onMounted(() => {
   bannerInterval = setInterval(() => {
     nextBanner();
   }, 5000);
+  document.addEventListener("keydown", handleKeydown);
 });
 
 onUnmounted(() => {
   if (bannerInterval) {
     clearInterval(bannerInterval);
   }
+  document.removeEventListener("keydown", handleKeydown);
 });
 </script>
 
@@ -98,7 +108,6 @@ onUnmounted(() => {
       <section class="weekly-best">
         <div class="section-header">
           <h2 class="section-title">WEEKLY BEST ITEMS</h2>
-
           <p class="section-subtitle">실시간 주목폭발 인기상품</p>
         </div>
 
@@ -136,7 +145,6 @@ onUnmounted(() => {
                   )"
                   :key="product.id"
                   :product="product"
-                  @add-to-cart="addToCart"
                   @open-quickview="openQuickView"
                 />
               </div>
@@ -175,7 +183,7 @@ onUnmounted(() => {
       <button class="more-btn">MORE ›</button>
     </div>
 
-    <TabProductSection />
+    <TabProductSection @close-coupon="showCoupon = false" />
 
     <Review />
 
@@ -191,7 +199,6 @@ onUnmounted(() => {
             stroke-width="2"
           >
             <line x1="18" y1="6" x2="6" y2="18"></line>
-
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
@@ -206,16 +213,13 @@ onUnmounted(() => {
             stroke-width="2"
           >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-
             <polyline points="7 10 12 15 17 10"></polyline>
-
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
 
         <div class="coupon-content">
           <div class="coupon-brand">LORD</div>
-
           <div class="coupon-text">신규회원</div>
           <span>웰컴 쿠폰 증정</span>
         </div>
@@ -230,13 +234,16 @@ onUnmounted(() => {
       </div>
     </transition>
 
-    <QuickViewModal :is-visible="isQuickViewOpen" @close="closeQuickView">
+    <QuickViewModal
+      :is-visible="isQuickViewOpen"
+      @close="closeQuickView"
+      v-if="quickViewProduct"
+    >
       <ProductDetail
-        v-if="quickViewProduct"
         :product="quickViewProduct"
         :is-quick-view="true"
+        @add-to-cart="handleAddToCartFromQuickView"
         @close="closeQuickView"
-        @add-to-cart="handleAddToCartAndClose"
       />
     </QuickViewModal>
   </div>
@@ -472,15 +479,22 @@ onUnmounted(() => {
   margin-left: 32px;
 }
 
-.coupon-fade-enter-active,
-.coupon-fade-leave-active {
+.coupon-fade-enter-active {
   transition: opacity 0.3s, transform 0.3s;
 }
 
-.coupon-fade-enter-from,
-.coupon-fade-leave-to {
+.coupon-fade-leave-active {
+  transition: all 0s;
+}
+
+.coupon-fade-enter-from {
   opacity: 0;
   transform: translateX(-50%) translateY(20px);
+}
+
+.coupon-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%);
 }
 
 @media (max-width: 1024px) {
@@ -563,6 +577,8 @@ onUnmounted(() => {
     max-width: 380px;
     height: 150px;
     bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .coupon-content {
@@ -615,6 +631,8 @@ onUnmounted(() => {
     width: calc(100% - 20px);
     height: 130px;
     bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .coupon-content {

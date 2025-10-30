@@ -22,14 +22,7 @@ defineEmits(["next", "prev", "set-banner"]);
           :key="banner.id"
           :class="['banner-slide', { active: currentBanner === index }]"
         >
-          <img
-            :src="banner.image"
-            :alt="banner.title"
-            :class="[
-              'banner-image',
-              { 'no-filter': banner.id === 1, 'custom-fit': banner.id === 1 },
-            ]"
-          />
+          <img :src="banner.image" :alt="banner.title" class="banner-image" />
           <div
             class="banner-content"
             :class="{ 'yellow-text': banner.id === 1 }"
@@ -111,20 +104,6 @@ defineEmits(["next", "prev", "set-banner"]);
   object-fit: cover;
   filter: brightness(0.7);
   transition: filter 0.3s;
-}
-
-.banner-image.no-filter {
-  filter: none !important;
-}
-
-.banner-image.custom-fit {
-  object-fit: contain !important;
-  margin-top: 70px;
-  transform: scale(1.1);
-}
-
-.banner-slide:hover .banner-image:not(.no-filter) {
-  filter: brightness(0.8);
 }
 
 .banner-content {
@@ -263,11 +242,12 @@ defineEmits(["next", "prev", "set-banner"]);
   .indicator.active {
     width: 24px;
   }
-
+  /* 제거된 스타일
   .banner-image.custom-fit {
     margin-top: 50px;
     transform: scale(1.05);
   }
+*/
 }
 
 @media (max-width: 480px) {
@@ -304,11 +284,12 @@ defineEmits(["next", "prev", "set-banner"]);
   .indicator.active {
     width: 20px;
   }
-
+  /* 제거된 스타일
   .banner-image.custom-fit {
     margin-top: 30px;
     transform: scale(1);
   }
+*/
 }
 
 @media (max-width: 360px) {

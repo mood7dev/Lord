@@ -3,7 +3,6 @@ import { defineStore } from "pinia";
 export const useProductStore = defineStore("product", {
   state: () => ({
     products: [
-      // NEW ITEM (n1 ~ n8) - 모든 상세 정보 포함
       {
         id: "n1",
         name: "올리브 캐미슬 롬퍼",
@@ -121,7 +120,6 @@ export const useProductStore = defineStore("product", {
         category: "dress",
       },
 
-      // TODAY SHIP (t1 ~ t8)
       {
         id: "t1",
         name: "린넨 와이드 팬츠",
@@ -230,7 +228,6 @@ export const useProductStore = defineStore("product", {
         category: "outer",
       },
 
-      // OUTLET (o1 ~ o8)
       {
         id: "o1",
         name: "아울렛 니트 가디건",
@@ -381,7 +378,6 @@ export const useProductStore = defineStore("product", {
       return state.products.find((product) => product.id === id);
     },
 
-    // ⭐️ 추가: HomeView에서 사용할 고정된 4개 상품 목록
     featuredProducts: (state) => {
       return state.products.filter((p) =>
         ["n1", "n2", "n3", "n4"].includes(p.id)
@@ -426,31 +422,39 @@ export const useProductStore = defineStore("product", {
   },
 
   actions: {
-    addToCart(product) {
-      const existingItem = this.cart.find((item) => item.id === product.id);
+    addToCart(productWithOptions) {
+      const uniqueKey = `${productWithOptions.id}-${productWithOptions.color}-${productWithOptions.size}`;
+      const existingItem = this.cart.find(
+        (item) => item.uniqueKey === uniqueKey
+      );
+
       if (existingItem) {
-        existingItem.quantity++;
+        existingItem.quantity += productWithOptions.quantity;
       } else {
-        this.cart.push({ ...product, quantity: 1 });
+        this.cart.push({
+          ...productWithOptions,
+          cartId: Date.now() + Math.random().toString(36).substring(2, 11),
+          uniqueKey: uniqueKey,
+        });
       }
     },
 
-    removeFromCart(productId) {
-      const index = this.cart.findIndex((item) => item.id === productId);
+    removeFromCart(cartItemId) {
+      const index = this.cart.findIndex((item) => item.cartId === cartItemId);
       if (index > -1) {
         this.cart.splice(index, 1);
       }
     },
 
-    increaseQuantity(productId) {
-      const item = this.cart.find((item) => item.id === productId);
+    increaseQuantity(cartItemId) {
+      const item = this.cart.find((item) => item.cartId === cartItemId);
       if (item) {
         item.quantity++;
       }
     },
 
-    decreaseQuantity(productId) {
-      const item = this.cart.find((item) => item.id === productId);
+    decreaseQuantity(cartItemId) {
+      const item = this.cart.find((item) => item.cartId === cartItemId);
       if (item && item.quantity > 1) {
         item.quantity--;
       }

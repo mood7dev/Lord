@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { defineProps, defineEmits } from "vue"; // 명시적 임포트 (선택 사항)
+import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
   product: {
@@ -9,8 +9,7 @@ const props = defineProps({
   },
 });
 
-// ⭐️ 퀵뷰 이벤트를 추가했습니다.
-const emit = defineEmits(["add-to-cart", "open-quickview"]);
+const emit = defineEmits(["open-quickview"]);
 
 const router = useRouter();
 
@@ -18,7 +17,6 @@ const formatPrice = (price) => {
   return price.toLocaleString("ko-KR");
 };
 
-// 1. 카드 본체 클릭 시: 상세 페이지로 라우팅 (URL 변경)
 const navigateToDetail = () => {
   router.push({
     name: "ProductDetail",
@@ -26,9 +24,8 @@ const navigateToDetail = () => {
   });
 };
 
-// ⭐️ 2. 퀵뷰 버튼 클릭 시: 부모에게 퀵뷰 모달을 열도록 이벤트 발생 (URL 변경 없음)
 const openQuickView = (event) => {
-  // @click.stop이 템플릿에 있지만, 명시적으로 $emit을 사용합니다.
+  event.stopPropagation();
   emit("open-quickview", props.product);
 };
 </script>
@@ -38,14 +35,8 @@ const openQuickView = (event) => {
     <div class="product-image-wrapper">
       <img :src="product.image" :alt="product.name" class="product-image" />
       <div class="product-overlay">
-        <button class="btn-quick-view" @click.stop="openQuickView">
+        <button class="btn-quick-view" @click="openQuickView">
           Quick View
-        </button>
-        <button
-          class="btn-add-cart"
-          @click.stop="$emit('add-to-cart', product)"
-        >
-          Add to Cart
         </button>
       </div>
     </div>
@@ -80,10 +71,11 @@ const openQuickView = (event) => {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s;
+  transform: translateZ(0);
 }
 
 .product-card:hover .product-image {
-  transform: scale(1.08);
+  transform: scale(1.08) translateZ(0);
 }
 
 .product-overlay {
@@ -99,15 +91,14 @@ const openQuickView = (event) => {
   align-items: center;
   gap: 12px;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.5s;
 }
 
 .product-card:hover .product-overlay {
   opacity: 1;
 }
 
-.btn-quick-view,
-.btn-add-cart {
+.btn-quick-view {
   padding: 12px 30px;
   border: 2px solid white;
   background: transparent;
@@ -121,11 +112,6 @@ const openQuickView = (event) => {
 }
 
 .btn-quick-view:hover {
-  background: white;
-  color: #333;
-}
-
-.btn-add-cart:hover {
   background: #ffd700;
   border-color: #ffd700;
   color: #333;

@@ -15,7 +15,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "add-to-cart"]);
+const emit = defineEmits(["close"]);
 
 const productStore = useProductStore();
 
@@ -25,6 +25,7 @@ const selectedColor = ref("");
 const selectedSize = ref("");
 const quantity = ref(1);
 const currentImage = ref(0);
+const isWished = ref(false);
 
 const colors = [
   { id: "navy", name: "네이비", code: "#1e3a5f" },
@@ -34,6 +35,10 @@ const colors = [
 ];
 
 const sizes = ["S", "M", "L", "XL"];
+
+const getColorName = (colorId) => {
+  return colors.find((c) => c.id === colorId)?.name;
+};
 
 const currentProduct = computed(() => {
   const productData = props.product || detailProduct.value;
@@ -78,17 +83,34 @@ const decreaseQuantity = () => {
 };
 
 const addToCart = () => {
+  if (!currentProduct.value) return;
+
   if (!selectedColor.value || !selectedSize.value) {
     alert("색상과 사이즈를 선택해주세요.");
     return;
   }
 
-  emit("add-to-cart", {
+  productStore.addToCart({
     ...currentProduct.value,
-    color: selectedColor.value,
+    color: getColorName(selectedColor.value),
     size: selectedSize.value,
     quantity: quantity.value,
   });
+
+  if (props.isQuickView) {
+    alert(
+      `${currentProduct.value.name} (${getColorName(selectedColor.value)}, ${
+        selectedSize.value
+      }) ${quantity.value}개가 장바구니에 담겼습니다.`
+    );
+    closeQuickView();
+  } else {
+    alert(
+      `${currentProduct.value.name} (${getColorName(selectedColor.value)}, ${
+        selectedSize.value
+      }) ${quantity.value}개가 장바구니에 담겼습니다.`
+    );
+  }
 };
 
 const closeQuickView = () => {
@@ -108,6 +130,10 @@ const prevImage = () => {
   if (currentImage.value > 0) {
     currentImage.value--;
   }
+};
+
+const toggleWishlist = () => {
+  isWished.value = !isWished.value;
 };
 
 onMounted(() => {
@@ -294,12 +320,15 @@ onMounted(() => {
         </div>
 
         <div class="action-buttons">
-          <button class="btn-wishlist">
+          <button
+            :class="['btn-wishlist', { 'is-wished': isWished }]"
+            @click="toggleWishlist"
+          >
             <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
-              fill="none"
+              :fill="isWished ? 'currentColor' : 'none'"
               stroke="currentColor"
             >
               <path
@@ -308,7 +337,7 @@ onMounted(() => {
             </svg>
           </button>
           <button class="btn-cart" @click="addToCart">장바구니</button>
-          <button class="btn-buy">바로구매</button>
+          <button class="btn-buy">구매하기</button>
         </div>
       </div>
     </div>
@@ -326,7 +355,6 @@ onMounted(() => {
 }
 .product-detail.quick-view {
   position: relative;
-  /* 퀵뷰 모드일 때는 부모 컨테이너(TabProductSection의 .quick-view-content)의 크기를 따르도록 max-width를 100%로 설정 */
   max-width: 100%;
   margin: 0 auto;
   padding: 0;
@@ -337,11 +365,9 @@ onMounted(() => {
   top: 20px;
   right: 20px;
   background: white;
-  /* ⭐️ 수정: 테두리를 없애고 투명하게 만듭니다. */
   border: none;
   width: 40px;
   height: 40px;
-  /* 둥근 테두리 제거 */
   border-radius: 0;
   display: flex;
   align-items: center;
@@ -353,7 +379,6 @@ onMounted(() => {
 
 .close-btn:hover {
   background: #f5f5f5;
-  /* ⭐️ 수정: 호버 시에도 테두리가 보이지 않도록 */
   border-color: transparent;
 }
 .product-container {
@@ -363,18 +388,20 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 40px;
-  margin-top: 140px; /* 일반 상품 상세 페이지용 마진 */
+  margin-top: 140px;
 }
-/* 퀵뷰 모드일 때의 핵심 수정: 마진 제거 및 패딩 재설정 */
+
 .product-detail.quick-view .product-container {
   margin-top: 0;
   padding: 40px;
 }
+
 .product-images {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
 .main-image {
   position: relative;
   width: 100%;
@@ -383,11 +410,13 @@ onMounted(() => {
   border-radius: 8px;
   overflow: hidden;
 }
+
 .main-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .nav-btn {
   position: absolute;
   top: 50%;
@@ -403,21 +432,26 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s;
 }
+
 .nav-btn:hover {
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 .nav-btn.prev {
   left: 20px;
 }
+
 .nav-btn.next {
   right: 20px;
 }
+
 .thumbnail-list {
   display: flex;
   gap: 12px;
   overflow-x: auto;
 }
+
 .thumbnail {
   flex-shrink: 0;
   width: 80px;
@@ -430,40 +464,49 @@ onMounted(() => {
   background: none;
   padding: 0;
 }
+
 .thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .thumbnail.active {
   border-color: #333;
 }
+
 .thumbnail:hover {
   border-color: #999;
 }
+
 .product-info {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
+
 .badges {
   display: flex;
   gap: 8px;
 }
+
 .badge {
   padding: 4px 12px;
   font-size: 12px;
   font-weight: 700;
   border-radius: 4px;
 }
+
 .badge.new {
   background: #ffd700;
   color: white;
 }
+
 .badge.sale {
   background: #e74c3c;
   color: white;
 }
+
 .product-title {
   font-size: 28px;
   font-weight: 600;
@@ -471,45 +514,54 @@ onMounted(() => {
   margin: 0;
   line-height: 1.4;
 }
+
 .price-section {
   padding: 20px 0;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
 }
+
 .original-price {
   font-size: 16px;
   color: #999;
   text-decoration: line-through;
   margin-bottom: 8px;
 }
+
 .current-price {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
+
 .current-price .price {
   font-size: 32px;
   font-weight: 700;
   color: #333;
 }
+
 .current-price .discount {
   font-size: 24px;
   font-weight: 700;
   color: #e74c3c;
 }
+
 .reward-info {
   font-size: 14px;
   color: #666;
 }
+
 .product-code {
   font-size: 14px;
   color: #999;
 }
+
 .option-section {
   padding: 20px 0;
   border-bottom: 1px solid #eee;
 }
+
 .option-label {
   display: block;
   font-size: 14px;
@@ -517,10 +569,12 @@ onMounted(() => {
   color: #333;
   margin-bottom: 12px;
 }
+
 .color-options {
   display: flex;
   gap: 12px;
 }
+
 .color-option {
   width: 48px;
   height: 48px;
@@ -533,17 +587,21 @@ onMounted(() => {
   justify-content: center;
   padding: 0;
 }
+
 .color-option.selected {
   border-color: #333;
   border-width: 3px;
 }
+
 .color-option:hover {
   transform: scale(1.1);
 }
+
 .size-options {
   display: flex;
   gap: 12px;
 }
+
 .size-option {
   min-width: 60px;
   padding: 12px 20px;
@@ -555,14 +613,17 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s;
 }
+
 .size-option:hover {
   border-color: #333;
 }
+
 .size-option.selected {
   background: #333;
   color: white;
   border-color: #333;
 }
+
 .selected-item {
   display: flex;
   align-items: center;
@@ -571,20 +632,24 @@ onMounted(() => {
   background: #f8f8f8;
   border-radius: 8px;
 }
+
 .item-info {
   flex: 1;
 }
+
 .item-name {
   font-size: 14px;
   font-weight: 500;
   color: #333;
   margin: 0 0 6px 0;
 }
+
 .item-options {
   font-size: 13px;
   color: #666;
   margin: 0;
 }
+
 .quantity-control {
   display: flex;
   align-items: center;
@@ -593,6 +658,7 @@ onMounted(() => {
   border-radius: 6px;
   padding: 4px;
 }
+
 .qty-btn {
   width: 32px;
   height: 32px;
@@ -605,19 +671,23 @@ onMounted(() => {
   justify-content: center;
   transition: all 0.3s;
 }
+
 .qty-btn:hover {
   background: #f5f5f5;
 }
+
 .qty-value {
   min-width: 40px;
   text-align: center;
   font-weight: 500;
 }
+
 .item-price {
   font-size: 18px;
   font-weight: 700;
   color: #333;
 }
+
 .total-section {
   display: flex;
   justify-content: space-between;
@@ -625,30 +695,36 @@ onMounted(() => {
   padding: 24px 0;
   border-top: 2px solid #333;
 }
+
 .total-label {
   font-size: 16px;
   font-weight: 500;
   color: #333;
 }
+
 .total-price {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .total-price .price {
   font-size: 28px;
   font-weight: 700;
   color: #ffd700;
 }
+
 .total-price .qty {
   font-size: 16px;
   color: #666;
 }
+
 .action-buttons {
   display: grid;
   grid-template-columns: auto 1fr 1fr;
   gap: 12px;
 }
+
 .btn-wishlist {
   width: 56px;
   height: 56px;
@@ -660,11 +736,47 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
+  transition: all 0.3s ease-in-out;
 }
 .btn-wishlist:hover {
   border-color: #333;
   background: #f5f5f5;
 }
+
+.btn-wishlist.is-wished {
+  border-color: #e74c3c;
+}
+.btn-wishlist.is-wished svg {
+  color: #e74c3c;
+  stroke-width: 2;
+  animation: heart-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    heart-float 0.4s ease-out;
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heart-float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 .btn-cart {
   padding: 16px;
   border: 1px solid #333;
@@ -676,10 +788,12 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s;
 }
+
 .btn-cart:hover {
   background: #333;
   color: white;
 }
+
 .btn-buy {
   padding: 16px;
   border: none;
@@ -691,73 +805,89 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s;
 }
+
 .btn-buy:hover {
   background: #ffc700;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
+
 .not-found-message {
   padding: 100px;
   text-align: center;
   color: #666;
 }
+
 .not-found-message h2 {
   color: #333;
   margin-bottom: 20px;
 }
-/* 태블릿 */
+
 @media (max-width: 768px) {
   .product-container {
     grid-template-columns: 1fr;
     gap: 40px;
     padding: 20px;
   }
+
   .product-detail.quick-view {
     padding: 20px;
   }
+
   .product-title {
     font-size: 24px;
   }
+
   .current-price .price {
     font-size: 28px;
   }
+
   .action-buttons {
     grid-template-columns: 1fr 1fr;
   }
+
   .btn-wishlist {
     grid-column: 1 / -1;
     width: 100%;
   }
 }
-/* 모바일 */
+
 @media (max-width: 480px) {
   .product-container {
     padding: 15px;
     gap: 30px;
   }
+
   .product-title {
     font-size: 20px;
   }
+
   .current-price .price {
     font-size: 24px;
   }
+
   .current-price .discount {
     font-size: 20px;
   }
+
   .thumbnail {
     width: 60px;
     height: 80px;
   }
+
   .selected-item {
     flex-wrap: wrap;
     gap: 12px;
   }
+
   .item-info {
     width: 100%;
   }
+
   .action-buttons {
     grid-template-columns: 1fr;
   }
+
   .btn-wishlist {
     grid-column: 1;
   }
